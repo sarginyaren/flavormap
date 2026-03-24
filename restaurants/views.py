@@ -1,4 +1,6 @@
 from django.shortcuts import render, get_object_or_404
+from django.db.models import Q
+
 from .models import Restaurant, Category
 
 
@@ -17,7 +19,7 @@ def restaurant_list(request):
     price = request.GET.get('price', '')
 
     if q:
-        restaurants = restaurants.filter(name__icontains=q) | restaurants.filter(description__icontains=q)
+        restaurants = restaurants.filter(Q(name__icontains=q) | Q(description__icontains=q))
     if category_id:
         restaurants = restaurants.filter(category_id=category_id)
     if price:
