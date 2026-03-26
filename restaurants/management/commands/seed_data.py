@@ -125,9 +125,9 @@ RESTAURANTS_DATA = [
 
 
 USERS_DATA = [
-    {'username': 'elif', 'email': 'elif@flavor.com', 'password': 'flavor123', 'is_superuser': False},
-    {'username': 'hana', 'email': 'hana@flavor.com', 'password': 'flavor123', 'is_superuser': False},
-    {'username': 'ramid', 'email': 'ramid@flavor.com', 'password': 'flavor123', 'is_superuser': False},
+    {'username': 'esin', 'email': 'esin@flavor.com', 'password': 'flavor123', 'is_superuser': False},
+    {'username': 'rana', 'email': 'rana@flavor.com', 'password': 'flavor123', 'is_superuser': False},
+    {'username': 'ramiz', 'email': 'ramiz@flavor.com', 'password': 'flavor123', 'is_superuser': False},
     {'username': 'yaren', 'email': 'yaren@flavor.com', 'password': '123456', 'is_superuser': False},
     {'username': 'admin', 'email': 'admin@flavor.com', 'password': 'admin123', 'is_superuser': True},
 ]
