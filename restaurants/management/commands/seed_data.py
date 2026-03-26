@@ -1,3 +1,4 @@
+from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand
 
 from restaurants.models import Category, Location, Restaurant, Review
@@ -123,6 +124,15 @@ RESTAURANTS_DATA = [
 ]
 
 
+USERS_DATA = [
+    {'username': 'elif', 'email': 'elif@flavor.com', 'password': 'flavor123', 'is_superuser': False},
+    {'username': 'hana', 'email': 'hana@flavor.com', 'password': 'flavor123', 'is_superuser': False},
+    {'username': 'ramid', 'email': 'ramid@flavor.com', 'password': 'flavor123', 'is_superuser': False},
+    {'username': 'yaren', 'email': 'yaren@flavor.com', 'password': '123456', 'is_superuser': False},
+    {'username': 'admin', 'email': 'admin@flavor.com', 'password': 'admin123', 'is_superuser': True},
+]
+
+
 class Command(BaseCommand):
     help = 'Seed the database with sample restaurants near Acibadem University'
 
@@ -150,3 +160,16 @@ class Command(BaseCommand):
             created += 1
 
         self.stdout.write(self.style.SUCCESS(f'\nDone — {created} new restaurant(s) added.'))
+
+        user_created = 0
+        for u in USERS_DATA:
+            if User.objects.filter(username=u['username']).exists():
+                self.stdout.write(f'  SKIP (already exists): {u["username"]}')
+                continue
+            if u['is_superuser']:
+                User.objects.create_superuser(u['username'], u['email'], u['password'])
+            else:
+                User.objects.create_user(u['username'], u['email'], u['password'])
+            self.stdout.write(self.style.SUCCESS(f'  USER ADDED: {u["username"]}'))
+            user_created += 1
+        self.stdout.write(self.style.SUCCESS(f'Done — {user_created} new user(s) added.'))
