@@ -1,8 +1,15 @@
-from django.shortcuts import render, get_object_or_404
-from django.db.models import Q
+from django.contrib import messages
+from django.contrib.auth import login
+from django.contrib.auth.decorators import login_required
+from django.db import transaction
+from django.db.models import Avg, Count, Q
+from django.shortcuts import get_object_or_404, redirect, render
 
-from .models import Restaurant, Category
-
+from .forms import MenuItemForm, PhotoForm, RegisterForm, RestaurantForm, ReviewForm
+from .models import (
+    Category, Favorite, Location, MenuItem,
+    Restaurant, RestaurantPhoto, Review, ReviewLike, ReviewReply,
+)
 
 def home(request):
     restaurants = Restaurant.objects.all().order_by('-created_at')[:6]
@@ -43,3 +50,15 @@ def about(request):
 
 def contact(request):
     return render(request, 'contact.html')
+
+def register(request):
+    if request.method == 'POST':
+        form = RegisterForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            login(request, user)
+            messages.success(request, f'Welcome to flavor, {user.username}!')
+            return redirect('home')
+    else:
+        form = RegisterForm()
+    return render(request, 'registration/register.html', {'form': form})
