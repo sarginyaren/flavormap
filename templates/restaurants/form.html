@@ -1,0 +1,94 @@
+{% extends 'base.html' %}
+{% block title %}{{ action }} Restaurant - flavor{% endblock %}
+{% block content %}
+<div class="form-page">
+  <div class="form-card">
+    <div class="breadcrumb">
+      <a href="{% url 'home' %}">Home</a> /
+      <a href="{% url 'restaurant_list' %}">Restaurants</a> /
+      {% if restaurant %}<a href="{% url 'restaurant_detail' restaurant.pk %}">{{ restaurant.name }}</a> /{% endif %}
+      {{ action }}
+    </div>
+    <h1 class="form-title">{{ action }} Restaurant</h1>
+    {% if messages %}
+      {% for msg in messages %}
+        <div class="alert alert-{{ msg.tags }}">{{ msg }}</div>
+      {% endfor %}
+    {% endif %}
+    <form method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Restaurant Name *</label>
+          <input type="text" name="name" value="{{ form.name.value|default:'' }}" placeholder="e.g. The Golden Fork" required>
+          {% if form.name.errors %}<span class="form-error">{{ form.name.errors.0 }}</span>{% endif %}
+        </div>
+        <div class="form-group">
+          <label>Phone</label>
+          <input type="text" name="phone" value="{{ form.phone.value|default:'' }}" placeholder="+90 212 ...">
+          {% if form.phone.errors %}<span class="form-error">{{ form.phone.errors.0 }}</span>{% endif %}
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Description *</label>
+        <textarea name="description" rows="4" placeholder="Describe the restaurant, cuisine, atmosphere...">{{ form.description.value|default:'' }}</textarea>
+        {% if form.description.errors %}<span class="form-error">{{ form.description.errors.0 }}</span>{% endif %}
+      </div>
+      <div class="form-group">
+        <label>Address *</label>
+        <input type="text" name="address" value="{{ form.address.value|default:'' }}" placeholder="Street, No, Neighborhood">
+        {% if form.address.errors %}<span class="form-error">{{ form.address.errors.0 }}</span>{% endif %}
+      </div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Category</label>
+          <select name="category">
+            <option value="">— Select —</option>
+            {% for cat in form.fields.category.queryset %}
+              <option value="{{ cat.pk }}" {% if form.category.value|stringformat:'s' == cat.pk|stringformat:'s' %}selected{% endif %}>{{ cat.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Location</label>
+          <select name="location">
+            <option value="">— Select —</option>
+            {% for loc in form.fields.location.queryset %}
+              <option value="{{ loc.pk }}" {% if form.location.value|stringformat:'s' == loc.pk|stringformat:'s' %}selected{% endif %}>{{ loc }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Price Range</label>
+          <select name="price_range">
+            {% for val, label in form.fields.price_range.choices %}
+              <option value="{{ val }}" {% if form.price_range.value == val %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Cover Photo</label>
+        {% if restaurant.photo %}
+          <div style="margin-bottom:8px"><img src="{{ restaurant.photo.url }}" style="height:100px;border-radius:8px;object-fit:cover;width:auto"></div>
+        {% endif %}
+        <input type="file" name="photo" accept="image/*">
+      </div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Latitude <span class="hint">(optional, for map)</span></label>
+          <input type="number" step="any" name="latitude" value="{{ form.latitude.value|default:'' }}" placeholder="e.g. 41.0082">
+        </div>
+        <div class="form-group">
+          <label>Longitude <span class="hint">(optional, for map)</span></label>
+          <input type="number" step="any" name="longitude" value="{{ form.longitude.value|default:'' }}" placeholder="e.g. 28.9784">
+        </div>
+      </div>
+      <div class="form-actions">
+        <a href="{% if restaurant %}{% url 'restaurant_detail' restaurant.pk %}{% else %}{% url 'restaurant_list' %}{% endif %}" class="btn-secondary">Cancel</a>
+        <button type="submit" class="btn-primary">{{ action }} Restaurant</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

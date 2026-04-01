@@ -1,83 +1,308 @@
 {% extends 'base.html' %}
-
+{% load restaurant_tags %}
 {% block title %}{{ restaurant.name }} - flavor{% endblock %}
-
 {% block content %}
 
+<!-- HERO -->
 <div class="detail-hero">
-    <div class="detail-hero-ph">🍽️</div>
+  {% if restaurant.photo %}
+    <img src="{{ restaurant.photo.url }}" alt="{{ restaurant.name }}" style="width:100%;height:100%;object-fit:cover">
+  {% else %}
+    <div class="detail-hero-ph" style="background:{% category_bg restaurant.category.name %}">{% category_icon restaurant.category.name 64 %}</div>
+  {% endif %}
 </div>
 
 <div class="detail-wrap">
 
-    <!-- SOL TARAF -->
-    <div>
+  <!-- LEFT COLUMN -->
+  <div>
 
-        <!-- Breadcrumb -->
-        <div class="breadcrumb">
-            <a href="{% url 'home' %}">Home</a> /
-            <a href="{% url 'restaurant_list' %}">Restaurants</a> /
-            {{ restaurant.name }}
-        </div>
-
-        <!-- Başlık -->
-        <h1 class="detail-name">{{ restaurant.name }}</h1>
-
-        <!-- Tag -->
-        <div class="detail-tags">
-            <span class="tag tag-cat">{{ restaurant.category }}</span>
-            <span class="tag tag-price">{{ restaurant.price_display }}</span>
-        </div>
-
-        <!-- Açıklama -->
-        <p class="detail-desc">{{ restaurant.description }}</p>
-
-        <!-- Info -->
-        <div class="info-card">
-            <h4>Details</h4>
-            <div class="info-row">📍 {{ restaurant.address }}</div>
-            <div class="info-row">📌 {{ restaurant.location }}</div>
-            <div class="info-row">📞 {{ restaurant.phone }}</div>
-        </div>
-
-        <!-- REVIEWS -->
-        <div class="reviews-section">
-            <div class="reviews-title">Reviews</div>
-
-            {% if reviews %}
-                {% for review in reviews %}
-                    <div class="review-card">
-                        <strong>{{ review.author }}</strong>
-                        <p>{{ review.text }}</p>
-                        <small>⭐ {{ review.rating }}/5</small>
-                    </div>
-                {% endfor %}
-            {% else %}
-                <p>No reviews yet</p>
-            {% endif %}
-
-        </div>
-
+    <!-- Breadcrumb -->
+    <div class="breadcrumb">
+      <a href="{% url 'home' %}">Home</a> /
+      <a href="{% url 'restaurant_list' %}">Restaurants</a> /
+      {{ restaurant.name }}
     </div>
 
-    <!-- SAĞ TARAF -->
-    <aside>
-
-        <div class="info-card">
-            <h4>Rating</h4>
-
-            {% with avg=restaurant.average_rating %}
-                {% if avg %}
-                    <div class="rating-num">{{ avg }}</div>
-                {% else %}
-                    <p>Not rated yet</p>
-                {% endif %}
-            {% endwith %}
-
+    <!-- Title + Actions -->
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px">
+      <h1 class="detail-name" style="margin-bottom:0">{{ restaurant.name }}</h1>
+      {% if user.is_authenticated and restaurant.created_by == user %}
+        <div style="display:flex;gap:8px;flex-shrink:0">
+          <a href="{% url 'restaurant_edit' restaurant.pk %}" class="btn-ghost btn-sm">Edit</a>
+          <a href="{% url 'restaurant_delete' restaurant.pk %}" class="btn-danger btn-sm">Delete</a>
         </div>
+      {% endif %}
+    </div>
 
-    </aside>
+    <!-- Tags -->
+    <div class="detail-tags">
+      <span class="tag tag-cat">{{ restaurant.category }}</span>
+      <span class="tag tag-price">{{ restaurant.price_display }}</span>
+      {% if restaurant.location %}
+        <span class="tag" style="background:var(--bg-2);color:var(--text-2)">{{ restaurant.location }}</span>
+      {% endif %}
+    </div>
+
+    <!-- Description -->
+    <p class="detail-desc">{{ restaurant.description }}</p>
+
+    <!-- Info -->
+    <div class="info-card">
+      <h4>Details</h4>
+      <div class="info-row">📍 {{ restaurant.address }}</div>
+      {% if restaurant.location %}<div class="info-row">📌 {{ restaurant.location }}</div>{% endif %}
+      <div class="info-row">📞 {{ restaurant.phone }}</div>
+    </div>
+
+    <!-- GOOGLE MAP -->
+    {% if restaurant.latitude and restaurant.longitude %}
+    <div class="info-card" style="padding:0;overflow:hidden">
+      <iframe
+        width="100%" height="300"
+        style="border:0;display:block"
+        loading="lazy"
+        src="https://maps.google.com/maps?q={{ restaurant.latitude }},{{ restaurant.longitude }}&z=16&output=embed">
+      </iframe>
+    </div>
+    {% elif restaurant.address %}
+    <div class="info-card" style="padding:0;overflow:hidden">
+      <iframe
+        width="100%" height="260"
+        style="border:0;display:block"
+        loading="lazy"
+        src="https://maps.google.com/maps?q={{ restaurant.address|urlencode }}&output=embed">
+      </iframe>
+    </div>
+    {% endif %}
+
+    <!-- MENU -->
+    {% if menu_by_cat %}
+    <div class="menu-section">
+      <div class="reviews-title">Menu</div>
+      {% for cat_label, items in menu_by_cat.items %}
+        <div class="menu-category">
+          <h4 class="menu-cat-title">{{ cat_label }}</h4>
+          {% for item in items %}
+            <div class="menu-item">
+              <div>
+                <div class="menu-item-name">{{ item.name }}</div>
+                {% if item.description %}<div class="menu-item-desc">{{ item.description }}</div>{% endif %}
+              </div>
+              <div style="display:flex;align-items:center;gap:8px">
+                <span class="menu-price">₺{{ item.price }}</span>
+                {% if user.is_authenticated and restaurant.created_by == user %}
+                  <form method="post" action="{% url 'menu_delete' item.pk %}" style="display:inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn-icon" title="Delete item">✕</button>
+                  </form>
+                {% endif %}
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% endfor %}
+      {% if user.is_authenticated and restaurant.created_by == user %}
+        <a href="{% url 'menu_add' restaurant.pk %}" class="btn-ghost btn-sm" style="margin-top:12px">+ Add Menu Item</a>
+      {% endif %}
+    </div>
+    {% elif user.is_authenticated and restaurant.created_by == user %}
+    <div style="margin-top:24px">
+      <a href="{% url 'menu_add' restaurant.pk %}" class="btn-ghost">+ Add Menu</a>
+    </div>
+    {% endif %}
+
+    <!-- PHOTO GALLERY -->
+    {% if photos %}
+    <div style="margin-top:40px">
+      <div class="reviews-title">Photos</div>
+      <div class="photo-grid">
+        {% for photo in photos %}
+          <div class="photo-thumb" onclick="openLightbox('{{ photo.image.url }}', '{{ photo.caption }}')">
+            <img src="{{ photo.image.url }}" alt="{{ photo.caption }}">
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+    {% if user.is_authenticated %}
+    <div style="margin-top:12px">
+      <a href="{% url 'photo_add' restaurant.pk %}" class="btn-ghost btn-sm">Upload Photo</a>
+    </div>
+    {% endif %}
+
+    <!-- REVIEWS -->
+    <div class="reviews-section">
+      <div class="reviews-title">
+        Reviews
+        {% with cnt=restaurant.reviews.count %}
+          <span style="font-size:15px;font-weight:400;color:var(--text-3)">({{ cnt }})</span>
+        {% endwith %}
+      </div>
+
+      <!-- Review Form -->
+      {% if user.is_authenticated %}
+        {% if user_has_reviewed %}
+          <div class="alert" style="margin-bottom:16px">You have already reviewed this restaurant.</div>
+        {% else %}
+          <form method="post" action="{% url 'review_add' restaurant.pk %}" class="review-form-card">
+            {% csrf_token %}
+            <div class="star-widget">
+              <input type="radio" name="rating" id="s5" value="5"><label for="s5" title="5">★</label>
+              <input type="radio" name="rating" id="s4" value="4"><label for="s4" title="4">★</label>
+              <input type="radio" name="rating" id="s3" value="3"><label for="s3" title="3">★</label>
+              <input type="radio" name="rating" id="s2" value="2"><label for="s2" title="2">★</label>
+              <input type="radio" name="rating" id="s1" value="1"><label for="s1" title="1">★</label>
+            </div>
+            <textarea name="text" rows="3" placeholder="Share your experience..." required style="width:100%;margin-top:12px;padding:12px;border:1px solid var(--border);border-radius:var(--r);font-family:var(--font);font-size:14px;resize:vertical;outline:none"></textarea>
+            <button type="submit" class="btn-primary" style="margin-top:10px">Submit Review</button>
+          </form>
+        {% endif %}
+      {% else %}
+        <div style="margin-bottom:20px;padding:16px;background:var(--bg-2);border-radius:var(--r);font-size:14px;color:var(--text-2)">
+          <a href="{% url 'login' %}" style="color:var(--accent)">Sign in</a> to leave a review.
+        </div>
+      {% endif %}
+
+      <!-- Reviews List -->
+      {% if reviews %}
+        {% for review in reviews %}
+          <div class="review-card">
+            <div class="review-top">
+              <div class="reviewer">
+                <div class="avatar">{{ review.author|slice:":1"|upper }}</div>
+                <div>
+                  <div class="reviewer-name">
+                    {{ review.author }}
+                    {% if restaurant.created_by and review.user == restaurant.created_by %}
+                      <span class="owner-badge">★ Owner</span>
+                    {% endif %}
+                  </div>
+                  <div class="reviewer-date">{{ review.created_at|date:"d M Y" }}</div>
+                </div>
+              </div>
+              <div class="review-stars">{% for i in "12345" %}{% if forloop.counter <= review.rating %}★{% else %}☆{% endif %}{% endfor %}</div>
+            </div>
+            <p class="review-text">{{ review.text }}</p>
+
+            <!-- Like button -->
+            <div style="display:flex;align-items:center;gap:12px;margin-top:10px">
+              {% if user.is_authenticated %}
+                <form method="post" action="{% url 'like_review' review.pk %}" style="display:inline">
+                  {% csrf_token %}
+                  <button type="submit" class="btn-like {% if review.pk in user_liked_reviews %}liked{% endif %}">
+                    {% if review.pk in user_liked_reviews %}♥{% else %}♡{% endif %}
+                    {{ review.likes.count }}
+                  </button>
+                </form>
+              {% else %}
+                <span class="btn-like">♡ {{ review.likes.count }}</span>
+              {% endif %}
+            </div>
+
+            <!-- Replies -->
+            {% if review.replies.all %}
+              <div class="replies">
+                {% for reply in review.replies.all %}
+                  <div class="reply">
+                    <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
+                      <strong style="font-size:13px">{{ reply.author.username }}</strong>
+                      {% if restaurant.created_by and reply.author == restaurant.created_by %}
+                        <span class="owner-badge">★ Owner</span>
+                      {% endif %}
+                      <span style="font-size:12px;color:var(--text-3)">{{ reply.created_at|date:"d M Y" }}</span>
+                    </div>
+                    <p style="font-size:13px;color:var(--text-2);margin:0">{{ reply.text }}</p>
+                  </div>
+                {% endfor %}
+              </div>
+            {% endif %}
+
+            <!-- Reply form -->
+            {% if user.is_authenticated %}
+              <form method="post" action="{% url 'reply_add' review.pk %}" class="reply-form">
+                {% csrf_token %}
+                <input type="text" name="text" placeholder="Write a reply..." required>
+                <button type="submit" class="btn-ghost btn-sm">Reply</button>
+              </form>
+            {% endif %}
+
+          </div>
+        {% endfor %}
+      {% else %}
+        <p style="color:var(--text-3);font-size:14px">No reviews yet. Be the first to review!</p>
+      {% endif %}
+    </div>
+
+  </div>
+
+  <!-- RIGHT COLUMN / ASIDE -->
+  <aside>
+
+    <!-- Rating Card -->
+    <div class="info-card">
+      <h4>Rating</h4>
+      {% with avg=restaurant.average_rating cnt=restaurant.reviews.count %}
+        {% if avg %}
+          <div class="rating-box">
+            <div class="rating-num">{{ avg }}</div>
+            <div class="rating-stars">
+              {% for i in "12345" %}{% if forloop.counter <= avg %}★{% else %}☆{% endif %}{% endfor %}
+            </div>
+            <div class="rating-cnt">{{ cnt }} review{{ cnt|pluralize }}</div>
+          </div>
+        {% else %}
+          <p style="color:var(--text-3);font-size:14px">Not rated yet</p>
+        {% endif %}
+      {% endwith %}
+    </div>
+
+    <!-- Favorite Button -->
+    {% if user.is_authenticated %}
+      <form method="post" action="{% url 'toggle_favorite' restaurant.pk %}">
+        {% csrf_token %}
+        <button type="submit" class="btn-favorite {% if user_favorite %}favorited{% endif %}">
+          {% if user_favorite %}Saved{% else %}Save{% endif %}
+        </button>
+      </form>
+    {% else %}
+      <a href="{% url 'login' %}" class="btn-favorite">Save</a>
+    {% endif %}
+
+    <!-- Owner Actions -->
+    {% if user.is_authenticated and restaurant.created_by == user %}
+      <div class="info-card" style="margin-top:16px">
+        <h4>Owner Actions</h4>
+        <a href="{% url 'restaurant_edit' restaurant.pk %}" class="btn-ghost" style="display:block;text-align:center;margin-bottom:8px">Edit Restaurant</a>
+        <a href="{% url 'menu_add' restaurant.pk %}" class="btn-ghost" style="display:block;text-align:center;margin-bottom:8px">Add Menu Item</a>
+        <a href="{% url 'photo_add' restaurant.pk %}" class="btn-ghost" style="display:block;text-align:center;margin-bottom:8px">Upload Photo</a>
+        <a href="{% url 'restaurant_delete' restaurant.pk %}" class="btn-danger" style="display:block;text-align:center">Delete</a>
+      </div>
+    {% endif %}
+
+  </aside>
 
 </div>
+
+<!-- LIGHTBOX -->
+<div id="lightbox" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:1000;align-items:center;justify-content:center;flex-direction:column" onclick="closeLightbox()">
+  <img id="lb-img" src="" style="max-width:90vw;max-height:80vh;border-radius:12px;object-fit:contain">
+  <p id="lb-caption" style="color:rgba(255,255,255,0.7);margin-top:12px;font-size:14px"></p>
+</div>
+
+<script>
+function openLightbox(url, caption) {
+  var lb = document.getElementById('lightbox');
+  document.getElementById('lb-img').src = url;
+  document.getElementById('lb-caption').textContent = caption || '';
+  lb.style.display = 'flex';
+}
+function closeLightbox() {
+  document.getElementById('lightbox').style.display = 'none';
+}
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') closeLightbox();
+});
+</script>
 
 {% endblock %}
