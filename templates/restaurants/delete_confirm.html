@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block title %}Delete {{ restaurant.name }} - flavor{% endblock %}
+{% block content %}
+<div class="auth-wrap">
+  <div class="auth-card">
+    <div class="auth-header">
+      <div class="delete-icon"></div>
+      <h1>Delete Restaurant?</h1>
+      <p>This action cannot be undone.</p>
+    </div>
+    <div style="background:var(--bg-2);border-radius:var(--r);padding:16px;margin-bottom:20px;text-align:center">
+      <strong>{{ restaurant.name }}</strong><br>
+      <span style="font-size:13px;color:var(--text-2)">{{ restaurant.location }}</span>
+    </div>
+    <form method="post" style="display:flex;gap:12px">
+      {% csrf_token %}
+      <a href="{% url 'restaurant_detail' restaurant.pk %}" class="btn-secondary" style="flex:1;text-align:center">Cancel</a>
+      <button type="submit" class="btn-danger" style="flex:1">Yes, Delete</button>
+    </form>
+  </div>
+</div>
+{% endblock %}
