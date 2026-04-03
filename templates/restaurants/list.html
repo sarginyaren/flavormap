@@ -1,86 +1,47 @@
 {% extends 'base.html' %}
-{% block title %}Restaurants - flavor{% endblock %}
+
+{% block title %}FlavorMap - Restoran Listesi{% endblock %}
+
 {% block content %}
-<!-- CATEGORY STRIP -->
-{% if categories %}
-<div class="cat-strip">
-<div class="cat-inner">
-<a href="{% url 'restaurant_list' %}"
-class="cat-btn {% if not request.GET.category %}active{% endif %}">All</a>
-{% for cat in categories %}
-<a href="?category={{ cat.id }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}"
-class="cat-btn {% if request.GET.category == cat.id|stringformat:'s' %}active{% endif %}">
-{{ cat.name }}
-</a>
-{% endfor %}
-</div>
-</div>
-{% endif %}
-<div class="section">
-<div class="wrap">
-<!-- FILTER BAR -->
-<form method="get">
-<div class="filter-bar">
-<span class="filter-label">Filter:</span>
-<select name="category" class="filter-sel" onchange="this.form.submit()">
-<option value="">All Categories</option>{% for cat in categories %}
-<option value="{{ cat.id }}"
-{% if request.GET.category == cat.id|stringformat:'s' %}selected{% endif %}>
-{{ cat.name }}
-</option>
-{% endfor %}
-</select>
-<select name="price" class="filter-sel" onchange="this.form.submit()">
-<option value="">All Prices</option>
-<option value="1" {% if request.GET.price == '1' %}selected{% endif %}>€ Budget</option>
-<option value="2" {% if request.GET.price == '2' %}selected{% endif %}>€€ Mid-range</option>
-<option value="3" {% if request.GET.price == '3' %}selected{% endif %}>€€€ Luxury</option>
-</select>
-{% if request.GET.q or request.GET.category or request.GET.price %}
-<a href="{% url 'restaurant_list' %}"
-style="font-size:13px;color:#ff3b30;font-weight:600;">Clear</a>
-{% endif %}
-<span style="margin-left:auto;font-size:13px;color:#6e6e73;">
-{{ restaurants|length }} restaurant{{ restaurants|length|pluralize }}
-</span>
-</div>
-</form>
-{% if restaurants %}
-<div class="cards">
-{% for r in restaurants %}
-<a href="{% url 'restaurant_detail' r.pk %}" class="card">
-<div class="card-img">
-<span class="card-badge">{{ r.price_display }}</span>
-</div>
-<div class="card-body">
-<div class="card-cat">{{ r.category }}</div>
-<div class="card-name">{{ r.name }}</div>
-<div class="card-loc">{{ r.location }}</div>
-<div class="card-foot">
-{% with avg=r.average_rating cnt=r.reviews.count %}
-{% if avg %}
-<div style="display:flex;align-items:center;gap:4px">
-<span class="stars">★</span>
-<span class="rating">{{ avg }}</span>
-<span class="rev-cnt">({{ cnt }} review{{ cnt|pluralize }})</span>
-</div>
-{% else %}
-<span class="rev-cnt">No reviews yet</span>
-{% endif %}
-{% endwith %}
-<span class="price-tag">{{ r.price_display }}</span>
-</div>
-</div>
-</a>
-{% endfor %}
-</div>
-{% else %}
-<div class="empty">
-<div class="empty-icon">■</div>
-<h3>No results found</h3>
-<p>Try different filters.</p>
-</div>
-{% endif %}
-</div>
+<div class="container" style="padding: 20px;">
+    <h2 style="margin-bottom: 24px;">Tüm Restoranlar</h2>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 24px;">
+
+        {% for r in restaurants %}
+        <div class="restaurant-card" style="border: 1px solid #eee; border-radius: 12px; overflow: hidden; background: white; transition: 0.3s;">
+
+            <div class="card-img" style="position: relative; height: 180px; background: #f8f9fa; display: flex; align-items: center; justify-content: center;">
+                <span class="card-badge" style="position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.6); color: white; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: bold; z-index: 2;">
+                    {{ r.price_display }}
+                </span>
+
+                {% if r.photo %}
+                    <img src="{{ r.photo.url }}" style="width: 100%; height: 180px; object-fit: cover;">
+                {% else %}
+                    <span style="font-size: 52px;">🍴</span>
+                {% endif %}
+            </div>
+
+            <div style="padding: 16px;">
+                <h3 style="margin: 0 0 8px 0; font-size: 18px;">
+                    <a href="{% url 'restaurant_detail' r.pk %}" style="text-decoration: none; color: #333;">
+                        {{ r.name }}
+                    </a>
+                </h3>
+                <p style="color: #666; font-size: 14px; margin-bottom: 12px;">
+                    {{ r.description|truncatechars:80 }}
+                </p>
+
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-size: 13px; color: #999;">📍 {{ r.location|default:"Konum belirtilmedi" }}</span>
+                    <a href="{% url 'restaurant_detail' r.pk %}" style="color: #ff4757; font-weight: 600; text-decoration: none; font-size: 14px;">Detay →</a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+            <p style="grid-column: 1 / -1; text-align: center; color: #999;">Henüz hiç restoran eklenmemiş.</p>
+        {% endfor %}
+    </div>
 </div>
 {% endblock %}

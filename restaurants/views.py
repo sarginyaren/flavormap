@@ -34,7 +34,7 @@ def restaurant_list(request):
         review_count=Count('reviews'),
     )
     categories = Category.objects.all()
-    cities = Location.objects.values_list('city', flat=True).distinct()
+    cities = Location.objects.values_list ('city', flat=True).distinct()
 
     q = request.GET.get('q', '')
     category_id = request.GET.get('category', '')
