@@ -211,7 +211,7 @@ def menu_add(request, pk):
         messages.error(request, 'Only the owner can manage the menu.')
         return redirect('restaurant_detail', pk=pk)
     if request.method == 'POST':
-        form = MenuItemForm(request.POST)
+        form = MenuItemForm(request.POST or None)
         if form.is_valid():
             item = form.save(commit=False)
             item.restaurant = restaurant

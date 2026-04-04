@@ -12,4 +12,57 @@
     <div class="detail-hero-ph" style="font-size:80px; height:380px; display:flex; align-items:center; justify-content:center; background:#eee;">🍴</div>
   {% endif %}
 </div>
+<div class="info-card" style="margin-top:28px">
 
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+    <h4>Menu</h4>
+    {% if user == restaurant.created_by or user.is_staff %}
+      <a href="{% url 'menu_add' restaurant.pk %}"
+         style="font-size:13px;font-weight:600;color:#FF6000">+ Add Item</a>
+    {% endif %}
+  </div>
+
+  {% if restaurant.menu_items.exists %}
+    {% regroup restaurant.menu_items.all by get_category_display as cats %}
+    {% for cat in cats %}
+      <p style="font-size:10px;font-weight:700;color:#FF6000;text-transform:uppercase;
+                letter-spacing:.06em;margin:14px 0 8px">
+        {{ cat.grouper }}
+      </p>
+
+      {% for item in cat.list %}
+        {% if item.is_available %}
+          <div style="display:flex;justify-content:space-between;
+                      padding:8px 0;border-bottom:1px solid #e5e5ea">
+            <div>
+              <div style="font-size:14px;font-weight:600">{{ item.name }}</div>
+              {% if item.description %}
+                <div style="font-size:12px;color:#6e6e73">{{ item.description }}</div>
+              {% endif %}
+            </div>
+
+            <div style="display:flex;align-items:center;gap:10px">
+              <span style="font-size:14px;font-weight:700;white-space:nowrap">
+                {{ item.price }} TL
+              </span>
+              {% if user == restaurant.created_by or user.is_staff %}
+                <form method="post" action="{% url 'menu_delete' item.pk %}">
+                  {% csrf_token %}
+                  <button type="submit"
+                          style="background:none;border:none;color:#ff3b30;
+                                 font-size:11px;cursor:pointer">
+                    Remove
+                  </button>
+                </form>
+              {% endif %}
+            </div>
+          </div>
+        {% endif %}
+      {% endfor %}
+    {% endfor %}
+
+  {% else %}
+    <p style="font-size:14px;color:#adadb8;padding:16px 0">No menu yet.</p>
+  {% endif %}
+
+</div>

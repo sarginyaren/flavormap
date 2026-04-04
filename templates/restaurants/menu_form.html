@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block title %}Add Menu Item - flavorMap{% endblock %}
+
+{% block content %}
+<div class="section">
+  <div class="wrap" style="max-width:560px">
+    <h1 style="font-size:28px;font-weight:700;margin-bottom:8px">Add Menu Item</h1>
+    <p style="color:#6e6e73;margin-bottom:24px">{{ restaurant.name }}</p>
+
+    <form method="post" class="info-card">
+      {% csrf_token %}
+      {% for field in form %}
+        <div style="margin-bottom:16px">
+          <label style="font-size:13px;font-weight:600;display:block;margin-bottom:6px">
+            {{ field.label }}
+          </label>
+          {{ field }}
+        </div>
+      {% endfor %}
+      <button type="submit" class="btn-primary">Add Item</button>
+    </form>
+  </div>
+</div>
+{% endblock %}
