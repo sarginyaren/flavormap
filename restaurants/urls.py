@@ -17,7 +17,7 @@ urlpatterns = [
     path('restaurants/<int:pk>/photo/', views.photo_add, name='photo_add'),
     path('about/', views.about, name='about'),
     path('contact/', views.contact, name='contact'),
-    path('register/', views.register_view, name='register'),
+    path('register/', views.register, name='register'),
     path('profile/', views.profile, name='profile'),
     path('favorites/', views.favorites_list, name='favorites_list'),
 ]

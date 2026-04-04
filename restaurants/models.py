@@ -71,6 +71,9 @@ class MenuItem(models.Model):
     category = models.CharField(max_length=10, choices=MENU_CAT, default='main')
     is_available = models.BooleanField(default=True)
 
+    class Meta:
+        ordering = ['category', 'name']
+
     def __str__(self):
         return f'{self.name} ({self.restaurant.name})'
 
