@@ -12,6 +12,20 @@
     <div class="detail-hero-ph" style="font-size:80px; height:380px; display:flex; align-items:center; justify-content:center; background:#eee;">🍴</div>
   {% endif %}
 </div>
+{% if user.is_authenticated %}
+  <div style="margin-top:20px; display:flex; justify-content:flex-end;">
+    <form method="post" action="{% url 'toggle_favorite' restaurant.pk %}">
+      {% csrf_token %}
+      <button type="submit" class="btn-secondary">
+        {% if user_favorite %}
+          ❤️ Remove from Favorites
+        {% else %}
+          🤍 Add to Favorites
+        {% endif %}
+      </button>
+    </form>
+  </div>
+{% endif %}
 <div class="info-card" style="margin-top:28px">
 
   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">

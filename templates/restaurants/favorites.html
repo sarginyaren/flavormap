@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+
+{% block title %}My Favorites{% endblock %}
+
+{% block content %}
+
+<h1>My Favorites</h1>
+
+{% for fav in favorites %}
+  <p>
+    <a href="{% url 'restaurant_detail' fav.restaurant.pk %}">
+      {{ fav.restaurant.name }}
+    </a>
+  </p>
+{% empty %}
+  <p>No favorites yet.</p>
+{% endfor %}
+
+{% endblock %}
