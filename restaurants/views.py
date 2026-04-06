@@ -258,20 +258,27 @@ def favorites_list(request):
 
 @login_required
 def profile(request):
-    user_reviews = request.user.reviews.select_related('restaurant').order_by('-created_at')
-    user_favorites = (
-        Favorite.objects
-        .filter(user=request.user)
-        .select_related('restaurant')
-        .order_by('-created_at')
-    )
-    user_restaurants = Restaurant.objects.filter(created_by=request.user).order_by('-created_at')
-    profile_stats = (user_reviews.count(), user_favorites.count(), user_restaurants.count())
+    user_reviews = Review.objects.filter(
+        created_by=request.user
+    ).order_by('-created_at')
+
+    user_favorites = Favorite.objects.filter(
+        user=request.user
+    ).select_related('restaurant')
+
+    user_restaurants = Restaurant.objects.filter(
+        created_by=request.user
+    ).order_by('-created_at')
+
     return render(request, 'profile.html', {
         'user_reviews': user_reviews,
         'user_favorites': user_favorites,
         'user_restaurants': user_restaurants,
-        'profile_stats': profile_stats,
+        'profile_stats': [
+            ('Reviews', user_reviews.count()),
+            ('Favorites', user_favorites.count()),
+            ('Restaurants', user_restaurants.count()),
+        ],
     })
 
 
