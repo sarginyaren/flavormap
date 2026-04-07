@@ -21,6 +21,7 @@ def home(request):
     )
     new_arrivals = Restaurant.objects.order_by('-created_at')[:6]
     categories = Category.objects.all()
+
     return render(request, 'home.html', {
         'top_rated': top_rated,
         'new_arrivals': new_arrivals,
@@ -34,7 +35,7 @@ def restaurant_list(request):
         review_count=Count('reviews'),
     )
     categories = Category.objects.all()
-    cities = Location.objects.values_list ('city', flat=True).distinct()
+    cities = Location.objects.values_list('city', flat=True).distinct()
 
     q = request.GET.get('q', '')
     category_id = request.GET.get('category', '')
@@ -51,12 +52,16 @@ def restaurant_list(request):
             Q(location__city__icontains=q) |
             Q(location__district__icontains=q)
         )
+
     if category_id:
         restaurants = restaurants.filter(category_id=category_id)
+
     if price:
         restaurants = restaurants.filter(price_range=price)
+
     if city:
         restaurants = restaurants.filter(location__city=city)
+
     if min_rating:
         try:
             restaurants = restaurants.filter(avg_rating__gte=float(min_rating))
@@ -93,7 +98,10 @@ def restaurant_detail(request, pk):
 
     if request.user.is_authenticated:
         user_has_reviewed = reviews.filter(user=request.user).exists()
-        user_favorite = Favorite.objects.filter(user=request.user, restaurant=restaurant).exists()
+        user_favorite = Favorite.objects.filter(
+            user=request.user,
+            restaurant=restaurant
+        ).exists()
         user_liked_reviews = set(
             ReviewLike.objects
             .filter(user=request.user, review__restaurant=restaurant)
@@ -135,6 +143,7 @@ def register(request):
             return redirect('home')
     else:
         form = RegisterForm()
+
     return render(request, 'registration/register.html', {'form': form})
 
 
@@ -150,15 +159,21 @@ def restaurant_add(request):
             return redirect('restaurant_detail', pk=restaurant.pk)
     else:
         form = RestaurantForm()
-    return render(request, 'restaurants/form.html', {'form': form, 'action': 'Add'})
+
+    return render(request, 'restaurants/form.html', {
+        'form': form,
+        'action': 'Add'
+    })
 
 
 @login_required
 def restaurant_edit(request, pk):
     restaurant = get_object_or_404(Restaurant, pk=pk)
+
     if restaurant.created_by != request.user and not request.user.is_staff:
         messages.error(request, 'You do not have permission to edit this restaurant.')
         return redirect('restaurant_detail', pk=pk)
+
     if request.method == 'POST':
         form = RestaurantForm(request.POST, request.FILES, instance=restaurant)
         if form.is_valid():
@@ -167,30 +182,40 @@ def restaurant_edit(request, pk):
             return redirect('restaurant_detail', pk=pk)
     else:
         form = RestaurantForm(instance=restaurant)
+
     return render(request, 'restaurants/form.html', {
-        'form': form, 'action': 'Edit', 'restaurant': restaurant,
+        'form': form,
+        'action': 'Edit',
+        'restaurant': restaurant,
     })
 
 
 @login_required
 def restaurant_delete(request, pk):
     restaurant = get_object_or_404(Restaurant, pk=pk)
+
     if restaurant.created_by != request.user and not request.user.is_staff:
         messages.error(request, 'You do not have permission to delete this restaurant.')
         return redirect('restaurant_detail', pk=pk)
+
     if request.method == 'POST':
         restaurant.delete()
         messages.success(request, 'Restaurant deleted.')
         return redirect('restaurant_list')
-    return render(request, 'restaurants/delete_confirm.html', {'restaurant': restaurant})
+
+    return render(request, 'restaurants/delete_confirm.html', {
+        'restaurant': restaurant
+    })
 
 
 @login_required
 def review_add(request, pk):
     restaurant = get_object_or_404(Restaurant, pk=pk)
+
     if Review.objects.filter(user=request.user, restaurant=restaurant).exists():
         messages.warning(request, 'You have already reviewed this restaurant.')
         return redirect('restaurant_detail', pk=pk)
+
     if request.method == 'POST':
         form = ReviewForm(request.POST)
         if form.is_valid():
@@ -201,15 +226,18 @@ def review_add(request, pk):
                 review.author = request.user.username
                 review.save()
             messages.success(request, 'Review submitted!')
+
     return redirect('restaurant_detail', pk=pk)
 
 
 @login_required
 def menu_add(request, pk):
     restaurant = get_object_or_404(Restaurant, pk=pk)
+
     if restaurant.created_by != request.user and not request.user.is_staff:
         messages.error(request, 'Only the owner can manage the menu.')
         return redirect('restaurant_detail', pk=pk)
+
     if request.method == 'POST':
         form = MenuItemForm(request.POST or None)
         if form.is_valid():
@@ -220,28 +248,40 @@ def menu_add(request, pk):
             return redirect('restaurant_detail', pk=pk)
     else:
         form = MenuItemForm()
-    return render(request, 'restaurants/menu_form.html', {'form': form, 'restaurant': restaurant})
+
+    return render(request, 'restaurants/menu_form.html', {
+        'form': form,
+        'restaurant': restaurant
+    })
 
 
 @login_required
-def menu_delete(request, pk):
-    item = get_object_or_404(MenuItem, pk=pk)
+def menu_delete(request, item_pk):
+    item = get_object_or_404(MenuItem, pk=item_pk)
     restaurant = item.restaurant
+
     if restaurant.created_by != request.user and not request.user.is_staff:
         messages.error(request, 'Only the owner can delete menu items.')
         return redirect('restaurant_detail', pk=restaurant.pk)
+
     if request.method == 'POST':
         item.delete()
         messages.success(request, 'Menu item deleted.')
+
     return redirect('restaurant_detail', pk=restaurant.pk)
 
 
 @login_required
 def toggle_favorite(request, pk):
     restaurant = get_object_or_404(Restaurant, pk=pk)
-    fav, created = Favorite.objects.get_or_create(user=request.user, restaurant=restaurant)
+    fav, created = Favorite.objects.get_or_create(
+        user=request.user,
+        restaurant=restaurant
+    )
+
     if not created:
         fav.delete()
+
     return redirect('restaurant_detail', pk=pk)
 
 
@@ -253,13 +293,16 @@ def favorites_list(request):
         .select_related('restaurant', 'restaurant__category', 'restaurant__location')
         .order_by('-created_at')
     )
-    return render(request, 'restaurants/favorites.html', {'favorites': favorites})
+
+    return render(request, 'restaurants/favorites.html', {
+        'favorites': favorites
+    })
 
 
 @login_required
 def profile(request):
     user_reviews = Review.objects.filter(
-        created_by=request.user
+        user=request.user
     ).order_by('-created_at')
 
     user_favorites = Favorite.objects.filter(
@@ -283,27 +326,43 @@ def profile(request):
 
 
 @login_required
-def reply_add(request, review_id):
-    review = get_object_or_404(Review, pk=review_id)
+def reply_add(request, review_pk):
+    review = get_object_or_404(Review, pk=review_pk)
+
     if request.method == 'POST':
         text = request.POST.get('text', '').strip()
         if text:
-            ReviewReply.objects.create(review=review, author=request.user, text=text)
+            ReviewReply.objects.create(
+                review=review,
+                author=request.user,
+                text=text
+            )
+            messages.success(request, 'Reply added!')
+
     return redirect('restaurant_detail', pk=review.restaurant.pk)
 
 
 @login_required
-def like_review(request, review_id):
-    review = get_object_or_404(Review, pk=review_id)
-    like, created = ReviewLike.objects.get_or_create(user=request.user, review=review)
+def like_review(request, review_pk):
+    review = get_object_or_404(Review, pk=review_pk)
+    like, created = ReviewLike.objects.get_or_create(
+        user=request.user,
+        review=review
+    )
+
     if not created:
         like.delete()
+        messages.info(request, 'Review unliked.')
+    else:
+        messages.success(request, 'Review liked!')
+
     return redirect('restaurant_detail', pk=review.restaurant.pk)
 
 
 @login_required
 def photo_add(request, pk):
     restaurant = get_object_or_404(Restaurant, pk=pk)
+
     if request.method == 'POST':
         form = PhotoForm(request.POST, request.FILES)
         if form.is_valid():
@@ -315,4 +374,8 @@ def photo_add(request, pk):
             return redirect('restaurant_detail', pk=pk)
     else:
         form = PhotoForm()
-    return render(request, 'restaurants/photo_form.html', {'form': form, 'restaurant': restaurant})
+
+    return render(request, 'restaurants/photo_form.html', {
+        'form': form,
+        'restaurant': restaurant
+    })

@@ -2,10 +2,6 @@ from django.contrib.auth.models import User
 from django.db import models
 from django.db.models import Avg
 
-from django.contrib.auth.models import User
-from django.db import models
-from django.db.models import Avg
-
 
 class Category(models.Model):
     name = models.CharField(max_length=100)
@@ -41,7 +37,11 @@ class Restaurant(models.Model):
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True)
     location = models.ForeignKey(Location, on_delete=models.SET_NULL, null=True)
     created_by = models.ForeignKey(
-        User, on_delete=models.SET_NULL, null=True, blank=True, related_name='restaurants'
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='restaurants'
     )
     photo = models.ImageField(upload_to='restaurants/', null=True, blank=True)
     latitude = models.FloatField(null=True, blank=True)
@@ -68,7 +68,11 @@ MENU_CAT = [
 
 
 class MenuItem(models.Model):
-    restaurant = models.ForeignKey(Restaurant, on_delete=models.CASCADE, related_name='menu_items')
+    restaurant = models.ForeignKey(
+        Restaurant,
+        on_delete=models.CASCADE,
+        related_name='menu_items'
+    )
     name = models.CharField(max_length=200)
     description = models.TextField(blank=True)
     price = models.DecimalField(max_digits=8, decimal_places=2)
@@ -83,9 +87,17 @@ class MenuItem(models.Model):
 
 
 class Review(models.Model):
-    restaurant = models.ForeignKey(Restaurant, on_delete=models.CASCADE, related_name='reviews')
+    restaurant = models.ForeignKey(
+        Restaurant,
+        on_delete=models.CASCADE,
+        related_name='reviews'
+    )
     user = models.ForeignKey(
-        User, on_delete=models.CASCADE, null=True, blank=True, related_name='reviews'
+        User,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name='reviews'
     )
     author = models.CharField(max_length=100)
     rating = models.IntegerField(choices=[(i, i) for i in range(1, 6)])
@@ -97,26 +109,56 @@ class Review(models.Model):
 
 
 class ReviewReply(models.Model):
-    review = models.ForeignKey(Review, on_delete=models.CASCADE, related_name='replies')
-    author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='review_replies')
+    review = models.ForeignKey(
+        Review,
+        on_delete=models.CASCADE,
+        related_name='replies'
+    )
+    author = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='review_replies'
+    )
     text = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name_plural = 'Review Replies'
 
     def __str__(self):
         return f'Reply by {self.author.username} on review {self.review.id}'
 
 
 class ReviewLike(models.Model):
-    review = models.ForeignKey(Review, on_delete=models.CASCADE, related_name='likes')
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='review_likes')
+    review = models.ForeignKey(
+        Review,
+        on_delete=models.CASCADE,
+        related_name='likes'
+    )
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='review_likes'
+    )
 
     class Meta:
         unique_together = ('review', 'user')
 
+    def __str__(self):
+        return f'{self.user.username} liked review {self.review.id}'
+
 
 class Favorite(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='favorites')
-    restaurant = models.ForeignKey(Restaurant, on_delete=models.CASCADE, related_name='favorited_by')
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='favorites'
+    )
+    restaurant = models.ForeignKey(
+        Restaurant,
+        on_delete=models.CASCADE,
+        related_name='favorited_by'
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -127,10 +169,18 @@ class Favorite(models.Model):
 
 
 class RestaurantPhoto(models.Model):
-    restaurant = models.ForeignKey(Restaurant, on_delete=models.CASCADE, related_name='photos')
+    restaurant = models.ForeignKey(
+        Restaurant,
+        on_delete=models.CASCADE,
+        related_name='photos'
+    )
     image = models.ImageField(upload_to='photos/')
     caption = models.CharField(max_length=200, blank=True)
-    uploaded_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='uploaded_photos')
+    uploaded_by = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='uploaded_photos'
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
