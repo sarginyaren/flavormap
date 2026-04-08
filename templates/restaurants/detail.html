@@ -6,7 +6,6 @@
 {% block content %}
 <div class="section">
   <div class="wrap">
-
     <div class="detail-hero">
       {% if restaurant.photo %}
         <img src="{{ restaurant.photo.url }}" style="width:100%;height:380px;object-fit:cover;display:block;">
@@ -282,4 +281,33 @@
 
   </div>
 </div>
+<<<<<<< HEAD
+=======
+
+<div class="wrap section">
+  <h1>{{ restaurant.name }}</h1>
+
+  <div class="review-box" style="margin-top: 30px; border: 1px solid #eee; padding: 20px; border-radius: 10px;">
+    <h3>Restoranı Puanla</h3>
+
+    <form method="post">
+      {% csrf_token %}
+
+      <div class="star-widget">
+        {% for i in '54321' %}
+          <input type="radio" name="rating" id="star{{ i }}" value="{{ i }}" {% if i == "5" %}checked{% endif %}>
+          <label for="star{{ i }}" title="{{ i }} stars">&#9733;</label>
+        {% endfor %}
+      </div>
+
+      <div style="margin-top: 15px;">
+        <textarea name="comment" placeholder="Yorumunuzu buraya yazın..." style="width:100%; padding:10px; border-radius:5px; border:1px solid #ccc;"></textarea>
+      </div>
+
+      <button type="submit" class="btn-primary" style="margin-top: 10px;">Puanı Gönder</button>
+    </form>
+  </div>
+</div>
+
+>>>>>>> 7b3edcb (star rating widget added)
 {% endblock %}
