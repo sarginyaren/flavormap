@@ -363,19 +363,15 @@ def like_review(request, review_pk):
 def photo_add(request, pk):
     restaurant = get_object_or_404(Restaurant, pk=pk)
 
-    if request.method == 'POST':
-        form = PhotoForm(request.POST, request.FILES)
-        if form.is_valid():
-            photo = form.save(commit=False)
-            photo.restaurant = restaurant
-            photo.uploaded_by = request.user
-            photo.save()
-            messages.success(request, 'Photo uploaded!')
-            return redirect('restaurant_detail', pk=pk)
-    else:
-        form = PhotoForm()
 
-    return render(request, 'restaurants/photo_form.html', {
-        'form': form,
-        'restaurant': restaurant
-    })
+    if request.method == "POST" and request.FILES.get("image"):
+        with transaction.atomic():
+            RestaurantPhoto.objects.create(
+                restaurant=restaurant,
+                image=request.FILES["image"],
+                caption=request.POST.get("caption", ""),
+                uploaded_by=request.user
+            )
+        messages.success(request, 'Photo added!')
+        return redirect('restaurant_detail', pk=pk)
+    return render(request, 'restaurants/photo_form.html', {'restaurant': restaurant})
