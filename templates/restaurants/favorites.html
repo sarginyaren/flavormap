@@ -1,19 +1,55 @@
 {% extends 'base.html' %}
-
-{% block title %}My Favorites{% endblock %}
-
+{% load restaurant_tags %}
+{% block title %}My Favorites - flavor{% endblock %}
 {% block content %}
-
-<h1>My Favorites</h1>
-
-{% for fav in favorites %}
-  <p>
-    <a href="{% url 'restaurant_detail' fav.restaurant.pk %}">
-      {{ fav.restaurant.name }}
-    </a>
-  </p>
-{% empty %}
-  <p>No favorites yet.</p>
-{% endfor %}
-
+<div class="section">
+  <div class="wrap">
+    <div class="section-top">
+      <div>
+        <h1 class="section-title">My Favorites</h1>
+        <p class="section-sub">{{ favorites|length }} saved restaurant{{ favorites|length|pluralize }}</p>
+      </div>
+    </div>
+    {% if favorites %}
+      <div class="cards">
+        {% for fav in favorites %}
+          <a href="{% url 'restaurant_detail' fav.restaurant.pk %}" class="card">
+            <div class="card-img">
+              {% if fav.restaurant.photo %}
+                <img src="{{ fav.restaurant.photo.url }}" alt="{{ fav.restaurant.name }}">
+              {% else %}
+                <div class="card-ph" style="background:{% category_bg fav.restaurant.category.name %}">{% category_icon fav.restaurant.category.name %}</div>
+              {% endif %}
+              <span class="card-badge">{{ fav.restaurant.price_display }}</span>
+            </div>
+            <div class="card-body">
+              <div class="card-cat">{{ fav.restaurant.category }}</div>
+              <div class="card-name">{{ fav.restaurant.name }}</div>
+              <div class="card-loc">{{ fav.restaurant.location }}</div>
+              <div class="card-foot">
+                {% with avg=fav.restaurant.average_rating cnt=fav.restaurant.reviews.count %}
+                  {% if avg %}
+                    <span class="stars">★</span>
+                    <span class="rating">{{ avg }}</span>
+                    <span class="rev-cnt">({{ cnt }})</span>
+                  {% else %}
+                    <span class="rev-cnt">No reviews yet</span>
+                  {% endif %}
+                {% endwith %}
+                <span class="price-tag">{{ fav.restaurant.price_display }}</span>
+              </div>
+            </div>
+          </a>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="empty">
+        <div class="empty-icon"></div>
+        <h3>No favorites yet</h3>
+        <p>Browse restaurants and click the heart button to save them here.</p>
+        <a href="{% url 'restaurant_list' %}" class="btn-primary" style="display:inline-block;margin-top:16px">Browse Restaurants</a>
+      </div>
+    {% endif %}
+  </div>
+</div>
 {% endblock %}

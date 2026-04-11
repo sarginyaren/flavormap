@@ -239,7 +239,7 @@ def menu_add(request, pk):
         return redirect('restaurant_detail', pk=pk)
 
     if request.method == 'POST':
-        form = MenuItemForm(request.POST or None)
+        form = MenuItemForm(request.POST)
         if form.is_valid():
             item = form.save(commit=False)
             item.restaurant = restaurant
@@ -256,8 +256,8 @@ def menu_add(request, pk):
 
 
 @login_required
-def menu_delete(request, item_pk):
-    item = get_object_or_404(MenuItem, pk=item_pk)
+def menu_delete(request, pk):
+    item = get_object_or_404(MenuItem, pk=pk)
     restaurant = item.restaurant
 
     if restaurant.created_by != request.user and not request.user.is_staff:
@@ -317,17 +317,13 @@ def profile(request):
         'user_reviews': user_reviews,
         'user_favorites': user_favorites,
         'user_restaurants': user_restaurants,
-        'profile_stats': [
-            ('Reviews', user_reviews.count()),
-            ('Favorites', user_favorites.count()),
-            ('Restaurants', user_restaurants.count()),
-        ],
+        'profile_stats': (user_reviews.count(), user_favorites.count(), user_restaurants.count()),
     })
 
 
 @login_required
-def reply_add(request, review_pk):
-    review = get_object_or_404(Review, pk=review_pk)
+def reply_add(request, review_id):
+    review = get_object_or_404(Review, pk=review_id)
 
     if request.method == 'POST':
         text = request.POST.get('text', '').strip()
@@ -343,8 +339,8 @@ def reply_add(request, review_pk):
 
 
 @login_required
-def like_review(request, review_pk):
-    review = get_object_or_404(Review, pk=review_pk)
+def like_review(request, review_id):
+    review = get_object_or_404(Review, pk=review_id)
     like, created = ReviewLike.objects.get_or_create(
         user=request.user,
         review=review
@@ -363,15 +359,15 @@ def like_review(request, review_pk):
 def photo_add(request, pk):
     restaurant = get_object_or_404(Restaurant, pk=pk)
 
-
-    if request.method == "POST" and request.FILES.get("image"):
-        with transaction.atomic():
-            RestaurantPhoto.objects.create(
-                restaurant=restaurant,
-                image=request.FILES["image"],
-                caption=request.POST.get("caption", ""),
-                uploaded_by=request.user
-            )
-        messages.success(request, 'Photo added!')
-        return redirect('restaurant_detail', pk=pk)
-    return render(request, 'restaurants/photo_form.html', {'restaurant': restaurant})
+    if request.method == 'POST':
+        form = PhotoForm(request.POST, request.FILES)
+        if form.is_valid():
+            photo = form.save(commit=False)
+            photo.restaurant = restaurant
+            photo.uploaded_by = request.user
+            photo.save()
+            messages.success(request, 'Photo added!')
+            return redirect('restaurant_detail', pk=pk)
+    else:
+        form = PhotoForm()
+    return render(request, 'restaurants/photo_form.html', {'form': form, 'restaurant': restaurant})

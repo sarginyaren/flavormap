@@ -1,14 +1,111 @@
 {% extends 'base.html' %}
+{% load restaurant_tags %}
 {% block title %}flavor - Discover Restaurants{% endblock %}
 {% block content %}
+
 <!-- HERO -->
 <div class="hero">
-<div class="hero-label">Your Restaurant Guide</div>
-<h1>YER<br><span>Routes</span></h1>
-<p>Find the best restaurants in your city, read reviews and save your favorites.</p>
-<form class="hero-search" action="{% url 'restaurant_list' %}" method="get">
-<input type="text" name="q" placeholder="Search by restaurant, cuisine or neighborhood...">
-<button type="submit">Search</button>
-</form>
+  <div class="hero-label">Your Restaurant Guide</div>
+  <h1>YER<br><span>Routes</span></h1>
+  <p>Find the best restaurants in your city, read reviews and save your favorites.</p>
+  <form class="hero-search" action="{% url 'restaurant_list' %}" method="get">
+    <input type="text" name="q" placeholder="Search by restaurant, cuisine or neighborhood...">
+    <button type="submit">Search</button>
+  </form>
+  {% if not user.is_authenticated %}
+    <div style="margin-top:20px">
+      <a href="{% url 'register' %}" class="btn-primary" style="margin-right:8px">Get Started</a>
+      <a href="{% url 'login' %}" class="btn-ghost">Sign In</a>
+    </div>
+  {% endif %}
 </div>
+
+<!-- TOP RATED -->
+{% if top_rated %}
+<div class="section">
+  <div class="wrap">
+    <div class="section-top">
+      <div>
+        <h2 class="section-title">Top Rated</h2>
+        <p class="section-sub">Highest rated restaurants</p>
+      </div>
+      <a href="{% url 'restaurant_list' %}?sort=rating" class="see-all">See all →</a>
+    </div>
+    <div class="cards">
+      {% for r in top_rated %}
+        <a href="{% url 'restaurant_detail' r.pk %}" class="card">
+          <div class="card-img">
+            {% if r.photo %}
+              <img src="{{ r.photo.url }}" alt="{{ r.name }}">
+            {% else %}
+              <div class="card-ph" style="background:{% category_bg r.category.name %}">{% category_icon r.category.name %}</div>
+            {% endif %}
+            <span class="card-badge">{{ r.price_display }}</span>
+          </div>
+          <div class="card-body">
+            <div class="card-cat">{{ r.category }}</div>
+            <div class="card-name">{{ r.name }}</div>
+            <div class="card-loc">{{ r.location }}</div>
+            <div class="card-foot">
+              <div style="display:flex;align-items:center;gap:4px">
+                <span class="stars">★</span>
+                <span class="rating">{{ r.avg_rating }}</span>
+                <span class="rev-cnt">({{ r.review_count }} review{{ r.review_count|pluralize }})</span>
+              </div>
+              <span class="price-tag">{{ r.price_display }}</span>
+            </div>
+          </div>
+        </a>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<!-- NEW ARRIVALS -->
+{% if new_arrivals %}
+<div class="section" style="background:var(--bg-2)">
+  <div class="wrap">
+    <div class="section-top">
+      <div>
+        <h2 class="section-title">New Arrivals</h2>
+        <p class="section-sub">Recently added restaurants</p>
+      </div>
+      <a href="{% url 'restaurant_list' %}?sort=new" class="see-all">See all →</a>
+    </div>
+    <div class="cards">
+      {% for r in new_arrivals %}
+        <a href="{% url 'restaurant_detail' r.pk %}" class="card">
+          <div class="card-img">
+            {% if r.photo %}
+              <img src="{{ r.photo.url }}" alt="{{ r.name }}">
+            {% else %}
+              <div class="card-ph" style="background:{% category_bg r.category.name %}">{% category_icon r.category.name %}</div>
+            {% endif %}
+            <span class="card-badge">{{ r.price_display }}</span>
+          </div>
+          <div class="card-body">
+            <div class="card-cat">{{ r.category }}</div>
+            <div class="card-name">{{ r.name }}</div>
+            <div class="card-loc">{{ r.location }}</div>
+            <div class="card-foot">
+              {% with avg=r.average_rating cnt=r.reviews.count %}
+                {% if avg %}
+                  <span class="stars">★</span>
+                  <span class="rating">{{ avg }}</span>
+                  <span class="rev-cnt">({{ cnt }})</span>
+                {% else %}
+                  <span class="rev-cnt">No reviews yet</span>
+                {% endif %}
+              {% endwith %}
+              <span class="price-tag">{{ r.price_display }}</span>
+            </div>
+          </div>
+        </a>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endif %}
+
 {% endblock %}
