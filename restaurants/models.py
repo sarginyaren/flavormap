@@ -73,6 +73,15 @@ class Restaurant(models.Model):
         hours = self.opening_hours or {}
         return [(label, hours.get(key, '')) for key, label in DAYS_ORDER]
 
+    @property
+    def display_photo(self):
+        if self.photo:
+            return self.photo.url
+        first = self.photos.first()
+        if first and first.image:
+            return first.image.url
+        return None
+
 
 MENU_CAT = [
     ('starter', 'Starter'),

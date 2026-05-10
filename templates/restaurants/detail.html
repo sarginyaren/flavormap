@@ -5,8 +5,8 @@
 
 <!-- HERO -->
 <div class="detail-hero">
-  {% if restaurant.photo %}
-    <img src="{{ restaurant.photo.url }}" alt="{{ restaurant.name }}" style="width:100%;height:100%;object-fit:cover">
+  {% if restaurant.display_photo %}
+    <img src="{{ restaurant.display_photo }}" alt="{{ restaurant.name }}" style="width:100%;height:100%;object-fit:cover">
   {% else %}
     <div class="detail-hero-ph" style="background:{% category_bg restaurant.category.name %}">{% category_icon restaurant.category.name 64 %}</div>
   {% endif %}

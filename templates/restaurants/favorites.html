@@ -15,8 +15,8 @@
         {% for fav in favorites %}
           <a href="{% url 'restaurant_detail' fav.restaurant.pk %}" class="card">
             <div class="card-img">
-              {% if fav.restaurant.photo %}
-                <img src="{{ fav.restaurant.photo.url }}" alt="{{ fav.restaurant.name }}">
+              {% if fav.restaurant.display_photo %}
+                <img src="{{ fav.restaurant.display_photo }}" alt="{{ fav.restaurant.name }}">
               {% else %}
                 <div class="card-ph" style="background:{% category_bg fav.restaurant.category.name %}">{% category_icon fav.restaurant.category.name %}</div>
               {% endif %}

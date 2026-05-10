@@ -39,8 +39,8 @@
         {% for r in user_restaurants %}
           <a href="{% url 'restaurant_detail' r.pk %}" class="card">
             <div class="card-img">
-              {% if r.photo %}
-                <img src="{{ r.photo.url }}" alt="{{ r.name }}">
+              {% if r.display_photo %}
+                <img src="{{ r.display_photo }}" alt="{{ r.name }}">
               {% else %}
                 <div class="card-ph" style="background:{% category_bg r.category.name %}">{% category_icon r.category.name %}</div>
               {% endif %}
@@ -95,8 +95,8 @@
         {% for fav in user_favorites %}
           <a href="{% url 'restaurant_detail' fav.restaurant.pk %}" class="card">
             <div class="card-img">
-              {% if fav.restaurant.photo %}
-                <img src="{{ fav.restaurant.photo.url }}" alt="{{ fav.restaurant.name }}">
+              {% if fav.restaurant.display_photo %}
+                <img src="{{ fav.restaurant.display_photo }}" alt="{{ fav.restaurant.name }}">
               {% else %}
                 <div class="card-ph" style="background:{% category_bg fav.restaurant.category.name %}">{% category_icon fav.restaurant.category.name %}</div>
               {% endif %}

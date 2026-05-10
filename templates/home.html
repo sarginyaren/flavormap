@@ -35,8 +35,8 @@
       {% for r in top_rated %}
         <a href="{% url 'restaurant_detail' r.pk %}" class="card">
           <div class="card-img">
-            {% if r.photo %}
-              <img src="{{ r.photo.url }}" alt="{{ r.name }}">
+            {% if r.display_photo %}
+              <img src="{{ r.display_photo }}" alt="{{ r.name }}">
             {% else %}
               <div class="card-ph" style="background:{% category_bg r.category.name %}">{% category_icon r.category.name %}</div>
             {% endif %}
@@ -77,8 +77,8 @@
       {% for r in new_arrivals %}
         <a href="{% url 'restaurant_detail' r.pk %}" class="card">
           <div class="card-img">
-            {% if r.photo %}
-              <img src="{{ r.photo.url }}" alt="{{ r.name }}">
+            {% if r.display_photo %}
+              <img src="{{ r.display_photo }}" alt="{{ r.name }}">
             {% else %}
               <div class="card-ph" style="background:{% category_bg r.category.name %}">{% category_icon r.category.name %}</div>
             {% endif %}
