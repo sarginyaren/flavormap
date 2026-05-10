@@ -41,8 +41,8 @@ A full-featured restaurant discovery web application built with Django, focused 
 
 | Layer | Technology |
 |---|---|
-| Language | Python 3.12 |
-| Framework | Django 4.2 |
+| Language | Python 3.13 |
+| Framework | Django 5.2 |
 | Database | SQLite (development) |
 | Image Processing | Pillow |
 | Frontend | HTML5, CSS3 (custom), Django Templates |

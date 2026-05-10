@@ -27,6 +27,16 @@ PRICE_CHOICES = [
     ('3', '₺₺₺'),
 ]
 
+DAYS_ORDER = [
+    ('monday', 'Monday'),
+    ('tuesday', 'Tuesday'),
+    ('wednesday', 'Wednesday'),
+    ('thursday', 'Thursday'),
+    ('friday', 'Friday'),
+    ('saturday', 'Saturday'),
+    ('sunday', 'Sunday'),
+]
+
 
 class Restaurant(models.Model):
     name = models.CharField(max_length=200)
@@ -46,6 +56,7 @@ class Restaurant(models.Model):
     photo = models.ImageField(upload_to='restaurants/', null=True, blank=True)
     latitude = models.FloatField(null=True, blank=True)
     longitude = models.FloatField(null=True, blank=True)
+    opening_hours = models.JSONField(default=dict, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -57,6 +68,10 @@ class Restaurant(models.Model):
 
     def price_display(self):
         return dict(PRICE_CHOICES).get(self.price_range, '₺₺')
+
+    def opening_hours_display(self):
+        hours = self.opening_hours or {}
+        return [(label, hours.get(key, '')) for key, label in DAYS_ORDER]
 
 
 MENU_CAT = [
@@ -103,6 +118,15 @@ class Review(models.Model):
     rating = models.IntegerField(choices=[(i, i) for i in range(1, 6)])
     text = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['user', 'restaurant'],
+                condition=models.Q(user__isnull=False),
+                name='unique_user_restaurant_review',
+            ),
+        ]
 
     def __str__(self):
         return f'{self.author} - {self.restaurant.name} ({self.rating})'

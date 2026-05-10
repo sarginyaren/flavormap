@@ -52,6 +52,19 @@
       <div class="info-row">📞 {{ restaurant.phone }}</div>
     </div>
 
+    <!-- Opening Hours -->
+    {% if restaurant.opening_hours %}
+    <div class="info-card">
+      <h4>Opening Hours</h4>
+      {% for day, hours in restaurant.opening_hours_display %}
+        <div class="info-row" style="display:flex;justify-content:space-between">
+          <span>{{ day }}</span>
+          <span style="color:var(--text-2)">{{ hours|default:"Closed" }}</span>
+        </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
     <!-- GOOGLE MAP -->
     {% if restaurant.latitude and restaurant.longitude %}
     <div class="info-card" style="padding:0;overflow:hidden">

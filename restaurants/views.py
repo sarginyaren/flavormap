@@ -1,7 +1,7 @@
 from django.contrib import messages
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
-from django.db import transaction
+from django.db import IntegrityError, transaction
 from django.db.models import Avg, Count, Q
 from django.shortcuts import get_object_or_404, redirect, render
 
@@ -219,13 +219,16 @@ def review_add(request, pk):
     if request.method == 'POST':
         form = ReviewForm(request.POST)
         if form.is_valid():
-            with transaction.atomic():
-                review = form.save(commit=False)
-                review.restaurant = restaurant
-                review.user = request.user
-                review.author = request.user.username
-                review.save()
-            messages.success(request, 'Review submitted!')
+            try:
+                with transaction.atomic():
+                    review = form.save(commit=False)
+                    review.restaurant = restaurant
+                    review.user = request.user
+                    review.author = request.user.username
+                    review.save()
+                messages.success(request, 'Review submitted!')
+            except IntegrityError:
+                messages.error(request, 'You have already reviewed this restaurant.')
 
     return redirect('restaurant_detail', pk=pk)
 
@@ -358,6 +361,10 @@ def like_review(request, review_id):
 @login_required
 def photo_add(request, pk):
     restaurant = get_object_or_404(Restaurant, pk=pk)
+
+    if restaurant.created_by != request.user and not request.user.is_staff:
+        messages.error(request, 'Only the owner can upload photos.')
+        return redirect('restaurant_detail', pk=pk)
 
     if request.method == 'POST':
         form = PhotoForm(request.POST, request.FILES)
