@@ -44,26 +44,27 @@
     <!-- Description -->
     <p class="detail-desc">{{ restaurant.description }}</p>
 
-    <!-- Info -->
-    <div class="info-card">
-      <h4>Details</h4>
-      <div class="info-row">📍 {{ restaurant.address }}</div>
-      {% if restaurant.location %}<div class="info-row">📌 {{ restaurant.location }}</div>{% endif %}
-      <div class="info-row">📞 {{ restaurant.phone }}</div>
-    </div>
+    <!-- Info + Opening Hours (side by side) -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start">
+      <div class="info-card" style="margin:0">
+        <h4>Details</h4>
+        <div class="info-row">📍 {{ restaurant.address }}</div>
+        {% if restaurant.location %}<div class="info-row">📌 {{ restaurant.location }}</div>{% endif %}
+        <div class="info-row">📞 {{ restaurant.phone }}</div>
+      </div>
 
-    <!-- Opening Hours -->
-    {% if restaurant.opening_hours %}
-    <div class="info-card">
-      <h4>Opening Hours</h4>
-      {% for day, hours in restaurant.opening_hours_display %}
-        <div class="info-row" style="display:flex;justify-content:space-between">
-          <span>{{ day }}</span>
-          <span style="color:var(--text-2)">{{ hours|default:"Closed" }}</span>
-        </div>
-      {% endfor %}
+      {% if restaurant.opening_hours %}
+      <div class="info-card" style="margin:0">
+        <h4>Opening Hours</h4>
+        {% for day, hours in restaurant.opening_hours_display %}
+          <div class="info-row" style="display:flex;justify-content:space-between">
+            <span>{{ day }}</span>
+            <span style="color:var(--text-2)">{{ hours|default:"Closed" }}</span>
+          </div>
+        {% endfor %}
+      </div>
+      {% endif %}
     </div>
-    {% endif %}
 
     <!-- GOOGLE MAP -->
     {% if restaurant.latitude and restaurant.longitude %}
